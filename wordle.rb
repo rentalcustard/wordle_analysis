@@ -1,4 +1,5 @@
 wordle_words = File.readlines('words.txt').map(&:upcase).map(&:strip)
+@possible_answers = File.readlines('possible_answers.txt').map(&:upcase).map(&:strip)
 @frequency_of_character_at_index = {
     0 => Hash.new { 0 },
     1 => Hash.new { 0 },
@@ -15,13 +16,15 @@ def build_character_frequency_lookups(wordle_words)
     end
 end
 
-def guess(previous_result, remaining_words, answer, rejected_letters)
+def guess(previous_result, remaining_words, answer, rejected_letters, last_try = false)
     guess = ""
     result = if previous_result == ""
         guess = 'ROATE'
         wordle(answer, 'ROATE')
     else
-        #for each remaining word, find the word which has the highest-frequency letter in each position
+        if last_try
+            remaining_words.select! {|w| @possible_answers.any? {|a| a == w}}
+        end
         guess = remaining_words.sort_by {|w| score(w) }.last
         wordle(answer, guess)
     end
@@ -83,7 +86,7 @@ def words_matching(guess, result, remaining_words, rejected_letters)
 end
 
 build_character_frequency_lookups(wordle_words)
-wordle_words.each do |word|
+@possible_answers.each do |word|
     # puts "trying with #{word}"
     guesses_remaining = 6
     result = ""
@@ -92,7 +95,7 @@ wordle_words.each do |word|
     until (result == "GGGGG") || (guesses_remaining == 0) do
         # puts result
         # puts guesses_remaining
-        returns = guess(result, remaining_words, word, rejected_letters)
+        returns = guess(result, remaining_words, word, rejected_letters, guesses_remaining == 1)
         result = returns[0]
         guess = returns[1]
         rejected_letters = returns[2]
