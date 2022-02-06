@@ -9,7 +9,7 @@ wordle_words = File.readlines('words.txt').map(&:upcase).map(&:strip)
 }
 
 def build_character_frequency_lookups(wordle_words)
-    wordle_words.each do |w|
+    @possible_answers.each do |w|
         w.chars.each_with_index do |c,i|
             @frequency_of_character_at_index[i][c] += 1
         end
